@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* Design tokens as CSS variables */
+:root {
+  --primary: #9FF5DE;
+  --secondary: #CAEBFF;
+  --accent: #FFE7E7;
+  --navy: #0E4981;
+  --ivory: #FDFAEC;
+  --noise: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 1px);
+}
+
+/* Global body style */
+body {
+  background: var(--navy);
+  color: var(--ivory);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: var(--noise);
+  background-size: 6px 6px;
+}
+
+/* Reusable helpers */
+.glass { @apply bg-white/10 backdrop-blur-md border border-white/10; }
+
+/* (Optional) gradient helpers without theme() */
+.gradient-mint-sky   { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+.gradient-mint-blush { background: linear-gradient(135deg, var(--primary), var(--accent)); }

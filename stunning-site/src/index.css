@@ -1,28 +1,56 @@
+/* src/index.css */
 @import "tailwindcss";
 
-/* Design tokens as CSS variables */
+/* -------------------------------------
+   Tailwind v4 theme tokens (your palette)
+   After this, classes like bg-navy, text-ivory,
+   bg-primary, bg-secondary, etc. will work.
+-------------------------------------- */
+@theme {
+  --color-primary:   #9FF5DE; /* mint */
+  --color-secondary: #CAEBFF; /* sky */
+  --color-accent:    #FFE7E7; /* blush */
+  --color-navy:      #0E4981; /* deep blue */
+  --color-ivory:     #FDFAEC; /* paper */
+}
+
+/* Tiny dotted texture — we’ll apply it only on the hero via .noise-bg */
 :root {
-  --primary: #9FF5DE;
-  --secondary: #CAEBFF;
-  --accent: #FFE7E7;
-  --navy: #0E4981;
-  --ivory: #FDFAEC;
   --noise: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 1px);
 }
 
-/* Global body style */
+/* ---------- Base ---------- */
 body {
-  background: var(--navy);
-  color: var(--ivory);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-image: var(--noise);
-  background-size: 6px 6px;
+  /* brand defaults */
+  @apply bg-navy text-ivory antialiased;
+
+  /* Turn OFF dotted/noise globally (we'll opt-in per-section) */
+  background-image: none !important;
 }
 
-/* Reusable helpers */
-.glass { @apply bg-white/10 backdrop-blur-md border border-white/10; }
+/* Apply the dotted pattern ONLY where you add this class */
+.noise-bg {
+  background-image: var(--noise);
+  background-size: 6px 6px;
+  background-position: 0 0;
+}
 
-/* (Optional) gradient helpers without theme() */
-.gradient-mint-sky   { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
-.gradient-mint-blush { background: linear-gradient(135deg, var(--primary), var(--accent)); }
+/* Soft, cool, pleasing background for content sections (sky → mint → ivory) */
+.bg-sea-veil {
+  background:
+    radial-gradient(1000px 320px at 50% 0%, rgba(255,255,255,0.55), rgba(255,255,255,0) 70%),
+    linear-gradient(180deg, #CAEBFF 0%, #9FF5DE 46%, #FDFAEC 100%);
+}
+
+/* ---------- Extras used around the app ---------- */
+.text-glow {
+  text-shadow: 0 1px 1px rgba(0,0,0,0.45), 0 -1px 1px rgba(0,0,0,0.25);
+}
+
+.glass {
+  @apply bg-white/10 backdrop-blur-md border border-white/15;
+}
+
+.gradient-mint-sky {
+  background: linear-gradient(135deg, #9FF5DE 0%, #CAEBFF 48%, #FDFAEC 100%);
+}

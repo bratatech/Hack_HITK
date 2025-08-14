@@ -1,15 +1,17 @@
 // src/pages/Explore.jsx
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect } from "react";
+import Lenis from "lenis";
+
 import UnderwaterScene from "../scenes/UnderwaterScene.jsx";
 import CtaCenter from "../components/auth/CtaCenter.jsx";
 import Ticker from "../components/stats/Ticker.jsx";
 import Hotspots from "../sections/Hotspots.jsx";
 import Stories from "../sections/Stories.jsx";
-import Lenis from "lenis";
+import PromptChip from "../components/ai/PromptChip.jsx";
 
 export default function Explore() {
-  // Smooth scrolling with Lenis
+  // Smooth scrolling
   useEffect(() => {
     const lenis = new Lenis({ smoothWheel: true, lerp: 0.1 });
     let raf;
@@ -24,7 +26,7 @@ export default function Explore() {
     };
   }, []);
 
-  // Realistic sample stats
+  // Sample stats (replace with API later)
   const stats = {
     wasteRemovedKg: 1_843_210,
     speciesProtected: 127,
@@ -47,7 +49,7 @@ export default function Explore() {
           </Suspense>
         </Canvas>
 
-        {/* Top light shafts over canvas */}
+        {/* Top light shafts overlay */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -66,13 +68,16 @@ export default function Explore() {
         <div className="absolute left-1/2 -translate-x-1/2 bottom-6 z-20 px-4 w-full flex justify-center">
           <Ticker stats={stats} />
         </div>
+
+        {/* 3) Mounted here: AI prompt chip (fixed bottom-right) */}
+        <PromptChip />
       </section>
 
-      {/* CONTENT: now the page scrolls naturally */}
+      {/* CONTENT SECTIONS (page scrolls naturally) */}
       <Hotspots />
       <Stories />
 
-      {/* spacer / future sections (globe, impact, CTA, footer) */}
+      {/* Spacer / future sections */}
       <section className="py-16 md:py-24 bg-white">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h3 className="text-2xl md:text-3xl font-bold text-navy">More coming next</h3>

@@ -3,10 +3,12 @@ import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import Button from "../components/ui/Button";
+import { useSceneTransition } from "../context/SceneTransitionContext";
 
 export default function Hero() {
   const mountRef = useRef(null);
   const rafRef = useRef(null);
+  const { startDive } = useSceneTransition();
 
   useEffect(() => {
     const container = mountRef.current;
@@ -26,12 +28,12 @@ export default function Hero() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.88;
+    renderer.toneMappingExposure = 0.88; // keeps reflections subdued
     container.appendChild(renderer.domElement);
 
     const loader = new THREE.TextureLoader();
 
-    // Sky – light, bright clouds on an inward sphere
+    // --- Sky: light, bright clouds on an inward dome (drifts slowly)
     const skyTex = loader.load("/textures/sky-clouds.jpg");
     skyTex.mapping = THREE.EquirectangularReflectionMapping;
     skyTex.colorSpace = THREE.SRGBColorSpace;
@@ -42,16 +44,17 @@ export default function Hero() {
       side: THREE.BackSide,
       toneMapped: false,
     });
-    skyMat.color.set("#bce8f9");    // lighten sky
+    // Lighten the visible sky (not reflections)
+    skyMat.color.set("#bce8f9");
     skyMat.color.multiplyScalar(1.3);
 
     const skyMesh = new THREE.Mesh(skyGeo, skyMat);
     scene.add(skyMesh);
 
-    // Keep reflections subtle
+    // Use the original texture for reflections so water stays calm
     scene.environment = skyTex;
 
-    // Water – deep navy blue, calmer surface
+    // --- Water: deep blue, calm, minimal specular
     const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
     const waterNormals = loader.load("/textures/waternormals.jpg", (tex) => {
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -62,16 +65,16 @@ export default function Hero() {
       textureHeight: 1024,
       waterNormals,
       sunDirection: new THREE.Vector3(1, 1, 1),
-      sunColor: 0x000000, // kill hard specular highlight
-      waterColor: new THREE.Color("#010e70"),
-      distortionScale: 0.85,
+      sunColor: 0x000000, // kill hard sun glint
+      waterColor: new THREE.Color("#010e70"), // deep ocean blue
+      distortionScale: 0.85, // calmer surface
       fog: false,
       alpha: 1.0,
     });
     water.rotation.x = -Math.PI / 2;
     scene.add(water);
 
-    // Resize responsiveness
+    // Resize handler
     function onResize() {
       const { clientWidth, clientHeight } = container;
       camera.aspect = clientWidth / clientHeight;
@@ -91,7 +94,7 @@ export default function Hero() {
     }
     document.addEventListener("visibilitychange", onVisibility);
 
-    // Animate
+    // Animate: gentle water + slow cloud drift
     const clock = new THREE.Clock();
     function animate() {
       rafRef.current = requestAnimationFrame(animate);
@@ -119,10 +122,10 @@ export default function Hero() {
 
   return (
     <section id="hero" className="relative h-[100svh] overflow-hidden noise-bg">
-      {/* WebGL */}
+      {/* WebGL mounts here */}
       <div ref={mountRef} className="absolute inset-0" />
 
-      {/* Bottom multiply tint to keep ocean rich */}
+      {/* Keep ocean rich at the bottom; sky untouched */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -131,19 +134,27 @@ export default function Hero() {
           mixBlendMode: "multiply",
         }}
       />
+      {/* Gentle legibility shade */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/12" />
 
       {/* Overlay content */}
       <div className="relative z-10 h-full flex items-center justify-center">
         <div className="text-center px-4 max-w-5xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-[0.2em] text-ivory text-glow">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-[0.2em] text-ivory"
+              style={{ textShadow: "0 1px 1px rgba(0,0,0,0.45), 0 -1px 1px rgba(0,0,0,0.25)" }}>
             ECOSPHERE
           </h1>
+
           <p className="mt-6 text-base md:text-lg text-ivory/85">
             We design experiences in harmony with the blue planet.
           </p>
+
           <div className="mt-10 flex items-center justify-center">
-            <Button as="a" href="/explore" variant="primary">
+            <Button
+              variant="primary"
+              onClick={() => startDive({ to: "/explore" })}
+              aria-label="Start underwater experience"
+            >
               Let’s Explore
             </Button>
           </div>

@@ -27,7 +27,7 @@ export default function ClosingCTA({
       {/* subtle radial glow */}
       <div className="pointer-events-none absolute inset-0 [background:radial-gradient(50%_40%_at_50%_0%,rgba(56,189,248,0.18),transparent_60%)]" />
 
-      <div className="relative mx-auto max-w-6xl px-6 py-12">
+      <div className="relative mx-auto w-full max-w-[72rem] px-6 py-12">
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
           <div className="max-w-3xl">
             <h2

@@ -1,6 +1,11 @@
+/* src/index.css */
 @import "tailwindcss";
 
-/* ---------- Tailwind v4 theme tokens (your palette) ---------- */
+/* -------------------------------------
+   Tailwind v4 theme tokens (your palette)
+   After this, classes like bg-navy, text-ivory,
+   bg-primary, bg-secondary, etc. will work.
+-------------------------------------- */
 @theme {
   --color-primary:   #9FF5DE; /* mint */
   --color-secondary: #CAEBFF; /* sky */
@@ -9,19 +14,21 @@
   --color-ivory:     #FDFAEC; /* paper */
 }
 
-/* Tiny dotted texture — apply only where .noise-bg is used */
+/* Tiny dotted texture — we’ll apply it only on the hero via .noise-bg */
 :root {
   --noise: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 1px);
 }
 
 /* ---------- Base ---------- */
 body {
+  /* brand defaults */
   @apply bg-navy text-ivory antialiased;
-  /* turn OFF global dots; we opt-in per-section */
+
+  /* Turn OFF dotted/noise globally (we'll opt-in per-section) */
   background-image: none !important;
 }
 
-/* Apply dots only where needed (hero) */
+/* Apply the dotted pattern ONLY where you add this class */
 .noise-bg {
   background-image: var(--noise);
   background-size: 6px 6px;
@@ -35,9 +42,15 @@ body {
     linear-gradient(180deg, #CAEBFF 0%, #9FF5DE 46%, #FDFAEC 100%);
 }
 
-/* Nice-to-have helpers */
+/* ---------- Extras used around the app ---------- */
 .text-glow {
   text-shadow: 0 1px 1px rgba(0,0,0,0.45), 0 -1px 1px rgba(0,0,0,0.25);
 }
-.glass { @apply bg-white/10 backdrop-blur-md border border-white/15; }
-.gradient-mint-sky { background: linear-gradient(135deg, #9FF5DE 0%, #CAEBFF 48%, #FDFAEC 100%); }
+
+.glass {
+  @apply bg-white/10 backdrop-blur-md border border-white/15;
+}
+
+.gradient-mint-sky {
+  background: linear-gradient(135deg, #9FF5DE 0%, #CAEBFF 48%, #FDFAEC 100%);
+}

@@ -1,87 +1,111 @@
 // src/components/auth/CtaCenter.jsx
-import React, { useRef } from "react";
-import { Link } from "react-router-dom";
-import { motion, useMotionValue, useSpring } from "framer-motion";
-import Button from "../ui/Button";
-
-const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+import React from "react";
+import { motion } from "framer-motion";
 
 export default function CtaCenter() {
-  const cardRef = useRef(null);
-
-  // magnetic micro-interaction
-  const rawX = useMotionValue(0);
-  const rawY = useMotionValue(0);
-  const x = useSpring(rawX, { stiffness: 120, damping: 12, mass: 0.2 });
-  const y = useSpring(rawY, { stiffness: 120, damping: 12, mass: 0.2 });
-
-  function onMove(e) {
-    const el = cardRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height / 2;
-    const dx = (e.clientX - cx) / (r.width / 2);
-    const dy = (e.clientY - cy) / (r.height / 2);
-    rawX.set(clamp(dx * 12, -12, 12));
-    rawY.set(clamp(dy * 12, -12, 12));
-  }
-  function onLeave() {
-    rawX.set(0);
-    rawY.set(0);
-  }
-
   return (
-    <motion.div
-      ref={cardRef}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      style={{ x, y }}
-      className="relative w-[90vw] max-w-[560px] mx-auto rounded-3xl
-                 bg-white/10 backdrop-blur-md border border-white/15
-                 shadow-[0_20px_80px_rgba(0,0,0,0.35)]
-                 p-6 md:p-8"
-    >
-      <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-white/20" />
+    <div className="max-w-3xl w-full">
+      <div className="mx-auto rounded-3xl border border-white/20 bg-white/5 backdrop-blur-md shadow-2xl px-6 py-10 sm:px-12 sm:py-12 text-center relative overflow-hidden">
+        {/* soft radial glow */}
+        <div className="pointer-events-none absolute -inset-16 bg-[radial-gradient(40%_30%_at_50%_0%,rgba(56,189,248,0.28),transparent_70%)]" />
 
-      <div className="text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-ivory">Welcome</h2>
-        <p className="mt-2 text-ivory/80">Dive in to continue your journey.</p>
+        {/* BIG, BEAUTIFUL ABOUT CHIP — fly in + float */}
+        <motion.a
+          href="/about"
+          initial={{ y: -18, opacity: 0, scale: 0.96 }}
+          animate={{
+            y: [0, -2, 0],
+            opacity: 1,
+            scale: 1,
+          }}
+          transition={{
+            duration: 0.7,
+            ease: "easeOut",
+            y: { duration: 3.5, repeat: Infinity, ease: "easeInOut" },
+          }}
+          className="relative mx-auto inline-flex items-center gap-3 rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-base sm:text-lg font-semibold text-white/95 shadow-xl backdrop-blur-xl ring-1 ring-white/10 hover:bg-white/15 hover:border-white/40 transition"
+        >
+          {/* glowing dot */}
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-70 animate-ping"></span>
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(110,231,183,0.8)]"></span>
+          </span>
+          <span className="tracking-tight">About&nbsp;EcoSphere</span>
+          {/* subtle shine */}
+          <span className="pointer-events-none absolute inset-0 rounded-full [mask-image:linear-gradient(180deg,white,transparent_60%)] opacity-60"
+                style={{ boxShadow: "inset 0 1px 12px rgba(255,255,255,.18)" }} />
+        </motion.a>
 
-        {/* Single primary Login button */}
-        <div className="mt-6 flex justify-center">
-          <Button
-            as={Link}
-            to="/login"
-            variant="primary"
-            className="px-6 py-3 text-base md:text-lg"
+        {/* Headline */}
+        <motion.h1
+          initial={{ y: 12, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.12, duration: 0.7, ease: "easeOut" }}
+          className="mt-5 text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white"
+        >
+          We turn <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-300 via-cyan-200 to-emerald-300">ocean data</span> into action
+        </motion.h1>
+
+        {/* Value prop */}
+        <motion.p
+          initial={{ y: 12, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="mt-3 text-white/85 text-lg"
+        >
+          Explore live hotspots, follow real impact stories, and back
+          community-led projects that restore marine life.
+        </motion.p>
+
+        {/* Benefits */}
+        <motion.ul
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.28, duration: 0.6 }}
+          className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-white/90"
+        >
+          <li className="rounded-xl bg-white/6 border border-white/10 px-3 py-2">🌍 Live 3D globe</li>
+          <li className="rounded-xl bg-white/6 border border-white/10 px-3 py-2">📈 Real-time impact</li>
+          <li className="rounded-xl bg-white/6 border border-white/10 px-3 py-2">🤝 Join the community</li>
+        </motion.ul>
+
+        {/* CTA row */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.38, duration: 0.5 }}
+          className="mt-6 text-white/80"
+        >
+          Ready to dive in?
+        </motion.p>
+
+        <motion.div
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.45, duration: 0.6 }}
+          className="mt-3 flex flex-col sm:flex-row items-center justify-center gap-3"
+        >
+          <a
+            href="/login"
+            className="inline-flex items-center justify-center rounded-2xl bg-emerald-300 text-navy font-semibold px-6 py-3 shadow-md hover:shadow-lg hover:bg-emerald-200 transition"
           >
-            {/* filled lock icon */}
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-              className="mr-2 inline"
-            >
-              <path d="M12 1a5 5 0 0 0-5 5v3H6a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3h-1V6a5 5 0 0 0-5-5Zm-3 8V6a3 3 0 1 1 6 0v3H9Z" />
+            <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="10" width="18" height="11" rx="2" />
+              <path d="M7 10V7a5 5 0 0 1 10 0v3" />
             </svg>
             Login
-          </Button>
-        </div>
+          </a>
 
-        {/* Subcopy with sign-up link */}
-        <p className="mt-3 text-ivory/70 text-sm">
-          New here?{" "}
-          <Link
-            to="/signup"
-            className="underline decoration-1 underline-offset-2 text-ivory"
+          <a
+            href="/signup"
+            className="inline-flex items-center justify-center rounded-2xl border border-white/30 bg-white/10 text-white font-semibold px-6 py-3 hover:bg-white/15 hover:border-white/40 transition"
           >
             Create an account
-          </Link>
-        </p>
+          </a>
+        </motion.div>
+
+        <p className="mt-3 text-xs text-white/60">Free account • No spam • Cancel anytime</p>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -1,17 +1,37 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 
 export default function Signup() {
   const nav = useNavigate();
-  const [f, setF] = useState({ email: "", password: "" });
+  const [f, setF] = useState({ email: "", password: "", name: "" });
 
-  function onSubmit(e) {
+  const [error, setError] = useState("");
+
+  async function onSubmit(e) {
     e.preventDefault();
-    // pretend signup success
-    nav("/select-role");
+    setError(""); // reset error
+
+    try {
+      // Send signup request to backend
+      const res = await axios.post("http://localhost:5000/signup", {
+        email: f.email,
+        password: f.password,
+        name: f.name,
+      }, { withCredentials: true });
+
+      if (res.status === 201) {
+        // success → move to role selection
+        nav("/select-role");
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      setError(err.response?.data || "Something went wrong");
+    }
   }
+
   function onGoogle() {
-    nav("/select-role");
+    nav("/select-role"); // (later you can add OAuth)
   }
 
   return (
@@ -32,6 +52,16 @@ export default function Signup() {
             />
           </div>
           <div>
+            <label className="text-sm font-medium">Name</label>
+            <input
+              required
+              value={f.name}
+              onChange={(e) => setF({ ...f, name: e.target.value })}
+              className="mt-1 w-full rounded-xl border border-navy/20 px-3 py-2"
+            />
+          </div>
+
+          <div>
             <label className="text-sm font-medium">Password</label>
             <input
               type="password"
@@ -44,7 +74,11 @@ export default function Signup() {
             <p className="text-xs text-navy/60 mt-1">Min 6 characters.</p>
           </div>
 
-          <button className="w-full rounded-xl bg-navy text-white font-semibold py-2.5">Sign up</button>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+
+          <button type="submit" className="w-full rounded-xl bg-navy text-white font-semibold py-2.5">
+            Sign up
+          </button>
 
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-navy/15" /></div>

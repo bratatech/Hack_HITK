@@ -10,7 +10,11 @@ const ROLES = [
 
 export default function SelectRole() {
   const nav = useNavigate();
-  function pick(key) { setRole(key); nav(rolePath(key)); }
+
+  function pick(key) {
+    setRole(key);
+    nav(rolePath(key));
+  }
 
   return (
     <div className="min-h-[100svh] bg-ivory text-navy flex items-center justify-center px-4">
@@ -23,7 +27,7 @@ export default function SelectRole() {
             <button
               key={r.key}
               onClick={() => pick(r.key)}
-              className="text-left rounded-2xl border border-navy/15 bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition"
+              className="text-left rounded-2xl border border-navy/15 bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-transform transition-shadow duration-200"
             >
               <div className="text-2xl">{r.emoji}</div>
               <div className="font-semibold mt-2">{r.name}</div>

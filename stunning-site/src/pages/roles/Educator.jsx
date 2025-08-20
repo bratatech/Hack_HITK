@@ -1,363 +1,501 @@
+// src/pages/Educator.jsx
+import React, { useMemo, useState } from "react";
 
+/* -------------------------------------------------------------------------- */
+/*                               Mocked Page Data                              */
+/* -------------------------------------------------------------------------- */
+const USER = {
+  name: "Dr. Rivera",
+  level: 5,
+  title: "Climate Advocate",
+  xp: 90,
+  nextLevelXp: 150,
+  modulesCompleted: 3,
+  totalPoints: 90,
+  badgesEarned: 4,
+  avatar: "/public/avatar-eco.png", // place an avatar here or swap the path
+};
 
-import React, { useState } from "react";
+const BADGES = [
+  { id: "ocean", label: "Ocean Protector", icon: "🌊", earned: true },
+  { id: "climate", label: "Climate Scholar", icon: "🌍", earned: true },
+  { id: "biodiv", label: "Biodiversity Champion", icon: "🦋", earned: true },
+  { id: "reforest", label: "Reforestation Ranger", icon: "🌳", earned: false },
+];
 
-// Learning Notes Modal
-function NotesModal({ open, onClose, module }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl p-8 w-full max-w-lg shadow-lg relative">
-        <button
-          className="absolute top-4 right-4 text-2xl text-[#0D47A1] hover:text-[#FF8F00] font-bold focus:outline-none focus:ring-2 focus:ring-[#0D47A1] rounded-full transition-colors"
-          aria-label="Close notes"
-          onClick={onClose}
-        >
-          ×
-        </button>
-        <h2 className="text-2xl font-bold text-[#0D47A1] mb-4">{module.title} - Learning Notes</h2>
-        <div className="text-[#1B5E20] text-base leading-relaxed">
-          {module.notes}
-        </div>
-      </div>
-    </div>
-  );
-}
+const RECENT = [
+  { id: "ocean-pollution", title: "Ocean Pollution", points: 25, icon: "🌊" },
+  { id: "climate-fund", title: "Climate Change Fundamentals", points: 30, icon: "🌍" },
+];
+
+const CATEGORIES = [
+  { id: "all", label: "All" },
+  { id: "sustain", label: "Sustainable Living" },
+  { id: "renew", label: "Renewable Energy" },
+  { id: "waste", label: "Waste Management" },
+  { id: "marine", label: "Marine Conservation" },
+  { id: "climate", label: "Climate Basics" },
+  { id: "biodiversity", label: "Biodiversity" },
+];
 
 const MODULES = [
   {
-    title: "Climate Basics",
-    desc: "Understand the science of climate change and its global impact.",
-    notes: (
-      <>
-        <b>What is Climate?</b><br/>
-        Climate is the average weather in a place over many years. It includes patterns of temperature, precipitation, humidity, wind, and seasons.<br/><br/>
-        <b>Greenhouse Effect:</b> Greenhouse gases like carbon dioxide trap heat in the atmosphere, keeping Earth warm enough for life. Human activities are increasing these gases, causing global warming.<br/><br/>
-        <b>Key Takeaways:</b>
-        <ul className="list-disc ml-6">
-          <li>Earth’s climate is changing faster than ever before.</li>
-          <li>Reducing emissions and protecting forests are vital for climate action.</li>
-        </ul>
-      </>
-    )
+    id: "ocean",
+    category: "marine",
+    track: "Marine Conservation",
+    title: "Ocean Pollution: Understanding the Crisis",
+    desc:
+      "Learn about the sources, impacts, and solutions to ocean pollution affecting marine ecosystems worldwide.",
+    minutes: 15,
+    level: "Beginner",
+    points: 25,
+    accent: "from-sky-200/60 to-indigo-100",
   },
   {
-    title: "Marine Conservation",
-    desc: "Explore the importance of oceans and how to protect marine life.",
-    notes: (
-      <>
-        <b>Why Oceans Matter:</b><br/>
-        Oceans cover 70% of Earth’s surface and produce over half of the world’s oxygen. They regulate climate and support diverse life.<br/><br/>
-        <b>Threats:</b> Plastic pollution, overfishing, and climate change are harming marine ecosystems.<br/><br/>
-        <b>How to Help:</b>
-        <ul className="list-disc ml-6">
-          <li>Reduce single-use plastics.</li>
-          <li>Support sustainable seafood.</li>
-          <li>Participate in beach cleanups.</li>
-        </ul>
-      </>
-    )
+    id: "climate-fund",
+    category: "climate",
+    track: "Climate Basics",
+    title: "Climate Change Fundamentals",
+    desc:
+      "Understand the science behind climate change, its causes, effects, and actionable solutions.",
+    minutes: 20,
+    level: "Beginner",
+    points: 30,
+    accent: "from-cyan-100 to-blue-100",
   },
   {
-    title: "Biodiversity",
-    desc: "Learn why biodiversity matters and how to preserve it.",
-    notes: (
-      <>
-        <b>What is Biodiversity?</b><br/>
-        Biodiversity is the variety of all living things on Earth—plants, animals, fungi, and microorganisms.<br/><br/>
-        <b>Why It Matters:</b> Healthy ecosystems provide food, clean water, medicine, and climate stability.<br/><br/>
-        <b>Protecting Biodiversity:</b>
-        <ul className="list-disc ml-6">
-          <li>Protect habitats and endangered species.</li>
-          <li>Promote sustainable agriculture and forestry.</li>
-          <li>Reduce pollution and invasive species.</li>
-        </ul>
-      </>
-    )
-  }
+    id: "biodiv",
+    category: "biodiversity",
+    track: "Biodiversity",
+    title: "Biodiversity Conservation Basics",
+    desc:
+      "Explore the importance of biodiversity, threats to ecosystems, and conservation strategies.",
+    minutes: 25,
+    level: "Intermediate",
+    points: 35,
+    accent: "from-emerald-100 to-lime-100",
+  },
 ];
 
-
-// Simple animated stat counter
-function Stat({ end, label }) {
-  const [count, setCount] = React.useState(0);
-  React.useEffect(() => {
-    let start = 0;
-    const duration = 1000;
-    const increment = end / (duration / 16);
-    const interval = setInterval(() => {
-      start += increment;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(interval);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 16);
-    return () => clearInterval(interval);
-  }, [end]);
+/* -------------------------------------------------------------------------- */
+/*                              Reusable UI Bits                               */
+/* -------------------------------------------------------------------------- */
+function ProgressBar({ value, max, color = "bg-gray-900" }) {
+  const pct = Math.min(100, Math.round((value / max) * 100));
   return (
-    <div className="flex flex-col items-center">
-      <span className="text-3xl md:text-4xl font-bold text-[#0D47A1]">{count.toLocaleString()}</span>
-      <span className="text-md text-[#1B5E20] mt-1">{label}</span>
+    <div className="w-full h-3 rounded-full bg-gray-200" aria-hidden>
+      <div className={`h-3 rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
     </div>
   );
 }
 
-function Educator() {
-  // State for search bar and suggestions
-  const [search, setSearch] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestions = [
-    "Climate Basics",
-    "Marine Conservation",
-    "Biodiversity",
-    "SDG 13",
-    "SDG 14",
-    "SDG 15",
-    "Deforestation",
-    "Ocean Health Index",
-    "Global Forest Watch"
-  ];
-  const filteredSuggestions = search.length > 0 ? suggestions.filter(s => s.toLowerCase().includes(search.toLowerCase())) : [];
-
-  // Module notes modal state
-  const [notesOpen, setNotesOpen] = useState(false);
-  const [activeModule, setActiveModule] = useState(null);
-  const [points, setPoints] = useState(0);
-  const [badges, setBadges] = useState([]);
-
-  const handleStartLesson = (idx) => {
-    setActiveModule(idx);
-    setNotesOpen(true);
-  };
-  // No quiz, so no points/badges update here
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setShowSuggestions(false);
-    // Optionally, you can do something with the search value here (e.g., filter modules, show a message, etc.)
-    // For now, just keep the search value as is.
-  };
-
+function Stat({ value, label, color = "text-gray-900" }) {
   return (
-    <div className="min-h-screen font-serif relative overflow-x-hidden bg-sea-veil">
-      {/* Profile Bar */}
-      <div className="w-full flex items-center justify-end px-8 pt-6 pb-2">
-        <div className="flex items-center gap-3 bg-white/80 rounded-full shadow px-4 py-2 border border-[#CAEBFF]">
-          <img src="/public/avatar-eco.png" alt="Profile avatar" className="w-10 h-10 rounded-full border-2 border-[#0D47A1] bg-[#CAEBFF] object-cover" />
-          <span className="text-[#0D47A1] font-semibold text-lg">Hello, Dr. Rivera</span>
-        </div>
-      </div>
-      {/* Decorative background pattern */}
-      <div aria-hidden className="pointer-events-none select-none absolute inset-0 z-0">
-        <svg width="100%" height="100%" className="absolute left-0 top-0 opacity-10" style={{mixBlendMode:'multiply'}}>
-          <defs>
-            <pattern id="dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="2" fill="#90caf9" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#dots)" />
-        </svg>
-      </div>
-      {/* Hero Section: Book Metaphor */}
-      <section className="flex flex-col items-center justify-center min-h-[70vh] relative">
-        <div className="bg-white/95 shadow-2xl rounded-[2.5rem] border-2 border-[#B39DDB] border-b-8 border-b-[#0D47A1] px-10 py-14 text-center max-w-3xl mt-16 relative z-10 transition-all duration-300">
-          <div className="flex justify-center mb-4">
-            {/* Book Icon with glow */}
-            <span className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-[#E1BEE7] to-[#0D47A1]/30 shadow-lg p-3">
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                <rect x="5" y="10" width="50" height="40" rx="8" fill="#E1BEE7" stroke="#1B5E20" strokeWidth="2"/>
-                <rect x="10" y="15" width="40" height="30" rx="4" fill="#fff" stroke="#0D47A1" strokeWidth="1.5"/>
-                <path d="M30 15v30" stroke="#0D47A1" strokeWidth="1.5"/>
-              </svg>
-            </span>
-          </div>
-                <h1 className="text-3xl md:text-5xl font-extrabold text-[#0D47A1] mb-6 tracking-tight">
-                  Global Environmental Knowledge Center
-                </h1>
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-6">
-                  <span className="bg-[#E1BEE7] text-[#1B5E20] px-4 py-2 rounded-full font-semibold shadow-md border border-[#B39DDB]">47,000+ educators worldwide</span>
-                  <span className="bg-[#E1BEE7] text-[#1B5E20] px-4 py-2 rounded-full font-semibold shadow-md border border-[#B39DDB]">12 languages</span>
-                  <span className="bg-[#E1BEE7] text-[#1B5E20] px-4 py-2 rounded-full font-semibold shadow-md border border-[#B39DDB]">156 research datasets</span>
-                </div>
-                {/* Search Bar */}
-                <form className="flex items-center justify-center mt-4 relative" onSubmit={handleSearch} autoComplete="off">
-                  <input
-                    type="text"
-                    className="w-full max-w-xs px-4 py-2 border border-[#0D47A1] rounded-l-lg focus:outline-none text-[#1B5E20] placeholder:text-[#0D47A1]"
-                    placeholder="Search topics, SDGs, regions..."
-                    value={search}
-                    onChange={e => {
-                      setSearch(e.target.value);
-                      setShowSuggestions(true);
-                    }}
-                    onFocus={() => setShowSuggestions(true)}
-                  />
-                  <button type="submit" className="bg-[#0D47A1] text-white px-4 py-2 rounded-r-lg font-semibold">Search</button>
-                  {showSuggestions && filteredSuggestions.length > 0 && (
-                    <ul className="absolute left-0 top-full w-full max-w-xs bg-white border border-[#E1BEE7] rounded-b-lg shadow z-20">
-                      {filteredSuggestions.map((s, i) => (
-                        <li key={i} className="px-4 py-2 hover:bg-[#E1BEE7] cursor-pointer text-[#1B5E20]" onMouseDown={() => { setSearch(s); setShowSuggestions(false); }}>{s}</li>
-                      ))}
-                    </ul>
-                  )}
-                </form>
-              </div>
-              {/* Decorative: Book shadow */}
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-8 w-[340px] h-8 bg-[#0D47A1]/20 rounded-full blur-xl z-0" />
-            </section>
-
-            {/* Interactive Learning Modules Section (placeholder) */}
-        <section className="max-w-6xl mx-auto mt-20 px-4">
-              <h2 className="text-2xl md:text-3xl font-bold text-[#1B5E20] mb-6 flex items-center">
-                <svg width="32" height="32" fill="none" viewBox="0 0 24 24" className="mr-2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="#0D47A1" strokeWidth="2"/><rect x="2" y="3" width="20" height="14" rx="4" fill="#E1BEE7" stroke="#1B5E20" strokeWidth="2"/></svg>
-                Interactive Learning Modules
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
-                {MODULES.map((mod, idx) => (
-                  <div key={mod.title} className="bg-white/95 rounded-3xl shadow-xl p-8 flex flex-col items-center border border-[#E1BEE7] hover:border-[#0D47A1] transition-all duration-200 group">
-                    <div className="w-20 h-20 bg-gradient-to-br from-[#E1BEE7] to-[#fff] rounded-full flex items-center justify-center mb-4 border-2 border-[#B39DDB] group-hover:scale-105 transition-transform">
-                      <span className="text-3xl">{idx === 0 ? "🌎" : idx === 1 ? "🌊" : "🌳"}</span>
-                    </div>
-                    <h3 className="font-bold text-[#0D47A1] text-lg mb-2 group-hover:text-[#1B5E20] transition-colors">{mod.title}</h3>
-                    <span className="bg-[#FF8F00] text-white px-2 py-1 rounded-full text-xs mb-2 shadow">{idx === 0 ? "Beginner" : idx === 1 ? "Intermediate" : "Advanced"}</span>
-                    <span className="text-sm text-[#1B5E20] mb-2">45 min reading + 15 min quiz</span>
-                    <button className="bg-[#0D47A1] hover:bg-[#1B5E20] text-white px-4 py-2 rounded font-semibold mt-auto shadow transition-colors duration-150" onClick={() => handleStartLesson(idx)}>Start Lesson</button>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Reward Points & Badges (placeholder) */}
-            <section className="max-w-5xl mx-auto mt-16 px-4">
-              <h2 className="text-2xl font-bold text-[#1B5E20] mb-4 flex items-center">
-                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" className="mr-2"><circle cx="12" cy="12" r="10" fill="#FF8F00" stroke="#1B5E20" strokeWidth="2"/><path d="M8 12l2 2 4-4" stroke="#fff" strokeWidth="2"/></svg>
-                Academic Achievements
-              </h2>
-              <div className="flex flex-wrap gap-4 items-center">
-                <span className="bg-[#FF8F00] text-white px-4 py-2 rounded-full font-semibold shadow">{points} Points</span>
-                {badges.length === 0 ? <span className="italic text-gray-500">No badges yet</span> : badges.map((b, i) => (
-                  <span key={i} className="bg-[#E1BEE7] text-[#1B5E20] px-4 py-2 rounded-full font-semibold shadow">{b} Badge</span>
-                ))}
-              </div>
-      {/* Learning Notes Modal */}
-      <NotesModal
-        open={notesOpen}
-        onClose={() => setNotesOpen(false)}
-        module={activeModule !== null ? MODULES[activeModule] : {title:'',notes:''}}
-      />
-            </section>
-
-            {/* Analytics Panel (placeholder) */}
-            <section className="max-w-5xl mx-auto mt-16 px-4">
-              <h2 className="text-2xl font-bold text-[#1B5E20] mb-4 flex items-center">
-                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" className="mr-2"><rect x="3" y="3" width="18" height="18" rx="4" fill="#E1BEE7" stroke="#0D47A1" strokeWidth="2"/><path d="M7 17V13M12 17V9M17 17V7" stroke="#1B5E20" strokeWidth="2"/></svg>
-                Environmental Intelligence Dashboard
-              </h2>
-              <div className="bg-white/90 rounded-2xl shadow-lg p-8 flex flex-col md:flex-row gap-8">
-                {/* Graphs and filters will go here */}
-                <div className="flex-1">
-                  <div className="h-40 bg-gradient-to-r from-[#E1BEE7] to-[#0D47A1]/30 rounded-xl flex items-center justify-center text-[#0D47A1] font-bold text-lg">[Deforestation Graph]</div>
-                  <div className="h-40 bg-gradient-to-r from-[#E1BEE7] to-[#1B5E20]/30 rounded-xl flex items-center justify-center text-[#1B5E20] font-bold text-lg mt-4">[Marine Waste Chart]</div>
-                </div>
-                <div className="flex-1">
-                  <div className="h-40 bg-gradient-to-r from-[#E1BEE7] to-[#FF8F00]/30 rounded-xl flex items-center justify-center text-[#FF8F00] font-bold text-lg">[Biodiversity Trend]</div>
-                  <div className="flex gap-2 mt-4">
-                    <button className="bg-[#0D47A1] text-white px-3 py-1 rounded">Region</button>
-                    <button className="bg-[#1B5E20] text-white px-3 py-1 rounded">Time</button>
-                    <button className="bg-[#FF8F00] text-white px-3 py-1 rounded">Layer</button>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* SDG Scorecards (placeholder) */}
-            <section className="max-w-5xl mx-auto mt-16 px-4">
-              <h2 className="text-2xl font-bold text-[#1B5E20] mb-4 flex items-center">
-                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" className="mr-2"><rect x="2" y="2" width="20" height="20" rx="5" fill="#E1BEE7" stroke="#0D47A1" strokeWidth="2"/></svg>
-                SDG Scorecards
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white/90 rounded-2xl shadow-lg p-6 flex flex-col items-center">
-                  <span className="text-3xl mb-2">🌡️</span>
-                  <h3 className="font-bold text-[#0D47A1] mb-2">Climate Action (13)</h3>
-                  <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
-                    <div className="bg-[#FF8F00] h-4 rounded-full" style={{width:'70%'}}></div>
-                  </div>
-                  <span className="text-sm text-[#FF8F00]">Needs Attention</span>
-                </div>
-                <div className="bg-white/90 rounded-2xl shadow-lg p-6 flex flex-col items-center">
-                  <span className="text-3xl mb-2">🌊</span>
-                  <h3 className="font-bold text-[#0D47A1] mb-2">Life Below Water (14)</h3>
-                  <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
-                    <div className="bg-[#1B5E20] h-4 rounded-full" style={{width:'85%'}}></div>
-                  </div>
-                  <span className="text-sm text-[#1B5E20]">On Track</span>
-                </div>
-                <div className="bg-white/90 rounded-2xl shadow-lg p-6 flex flex-col items-center">
-                  <span className="text-3xl mb-2">🌳</span>
-                  <h3 className="font-bold text-[#0D47A1] mb-2">Life on Land (15)</h3>
-                  <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
-                    <div className="bg-red-500 h-4 rounded-full" style={{width:'40%'}}></div>
-                  </div>
-                  <span className="text-sm text-red-500">Critical Action Required</span>
-                </div>
-              </div>
-            </section>
-
-            {/* Download Reports (placeholder) */}
-            <section className="max-w-5xl mx-auto mt-16 px-4">
-              <h2 className="text-2xl font-bold text-[#1B5E20] mb-4 flex items-center">
-                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" className="mr-2"><rect x="4" y="4" width="16" height="16" rx="4" fill="#E1BEE7" stroke="#0D47A1" strokeWidth="2"/></svg>
-                Download Reports
-              </h2>
-              <div className="flex gap-6 items-center">
-                <div className="bg-white/90 rounded-xl shadow p-6 flex flex-col items-center">
-                  <span className="text-3xl mb-2">📄</span>
-                  <span className="font-bold mb-2">Research Paper (PDF)</span>
-                  <button className="bg-[#0D47A1] text-white px-4 py-2 rounded font-semibold">Download PDF</button>
-                </div>
-                <div className="bg-white/90 rounded-xl shadow p-6 flex flex-col items-center">
-                  <span className="text-3xl mb-2">📊</span>
-                  <span className="font-bold mb-2">Data Table (CSV)</span>
-                  <button className="bg-[#1B5E20] text-white px-4 py-2 rounded font-semibold">Download CSV</button>
-                </div>
-              </div>
-            </section>
-
-            {/* Research Data Hub (placeholder) */}
-            <section className="max-w-5xl mx-auto mt-16 px-4 mb-24">
-              <h2 className="text-2xl font-bold text-[#1B5E20] mb-4 flex items-center">
-                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" className="mr-2"><rect x="2" y="2" width="20" height="20" rx="5" fill="#E1BEE7" stroke="#0D47A1" strokeWidth="2"/></svg>
-                Research Data Hub
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white/90 rounded-2xl shadow-lg p-6 flex flex-col items-center">
-                  <span className="text-3xl mb-2">🌐</span>
-                  <span className="font-bold mb-2 text-[#0D47A1]">UNEP</span>
-                  <span className="text-sm text-gray-600 mb-2">Official UN Environment Programme datasets</span>
-                  <button className="bg-[#1B5E20] text-white px-4 py-2 rounded font-semibold">View Data</button>
-                </div>
-                <div className="bg-white/90 rounded-2xl shadow-lg p-6 flex flex-col items-center">
-                  <span className="text-3xl mb-2">🛰️</span>
-                  <span className="font-bold mb-2 text-[#0D47A1]">Global Forest Watch</span>
-                  <span className="text-sm text-gray-600 mb-2">Satellite imagery & deforestation maps</span>
-                  <button className="bg-[#0D47A1] text-white px-4 py-2 rounded font-semibold">View Data</button>
-                </div>
-                <div className="bg-white/90 rounded-2xl shadow-lg p-6 flex flex-col items-center">
-                  <span className="text-3xl mb-2">🐠</span>
-                  <span className="font-bold mb-2 text-[#0D47A1]">Ocean Health Index</span>
-                  <span className="text-sm text-gray-600 mb-2">Marine health visualizations & coral reef data</span>
-                  <button className="bg-[#FF8F00] text-white px-4 py-2 rounded font-semibold">View Data</button>
-                </div>
-              </div>
-            </section>
-          </div>
+    <div className="text-center">
+      <div className={`text-3xl font-extrabold leading-none ${color}`}>{value}</div>
+      <div className="text-sm text-gray-500 leading-tight">{label}</div>
+    </div>
   );
 }
 
-export default Educator;
+function BadgePill({ earned, icon, label }) {
+  const base =
+    "inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm border shadow-sm";
+  return (
+    <span
+      className={
+        earned
+          ? `${base} bg-white border-gray-200 text-gray-700`
+          : `${base} bg-gray-50 text-gray-400 border-gray-100 opacity-70`
+      }
+      title={earned ? label : `${label} (locked)`}
+    >
+      <span className="text-lg leading-none">{icon}</span>
+      {label}
+    </span>
+  );
+}
 
+function ModuleCard({ m, onStart }) {
+  return (
+    <div className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 overflow-hidden">
+      <div className="p-5">
+        <span className="inline-block text-xs font-semibold text-gray-700 bg-white ring-1 ring-gray-200 rounded-full px-3 py-1 mb-3">
+          {m.track}
+        </span>
+        <h3 className="text-lg font-bold text-gray-900">{m.title}</h3>
+        <p className="mt-2 text-sm text-gray-600">{m.desc}</p>
 
+        <div className="mt-4 flex items-center gap-4 text-gray-500 text-sm">
+          <span className="inline-flex items-center gap-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-80">
+              <path fill="currentColor" d="M12 8v5l4 2 .75-1.86-2.75-1.39V8z" />
+              <path fill="currentColor" d="M12 22a10 10 0 1 1 10-10 10.011 10.011 0 0 1-10 10m0-18a8 8 0 1 0 8 8 8.009 8.009 0 0 0-8-8" />
+            </svg>
+            {m.minutes} min
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-80">
+              <path fill="currentColor" d="M12 2l3 7h7l-5.5 4 2.5 7-7-4.5L5.5 20 8 13 2 9h7z" />
+            </svg>
+            {m.level}
+          </span>
+          <span className="inline-flex items-center gap-1">⭐ <span className="font-medium">{m.points}</span> pts</span>
+        </div>
+      </div>
+
+      <div className={`h-2 bg-gradient-to-r ${m.accent}`} aria-hidden />
+      <div className="p-5 pt-3">
+        <button
+          onClick={() => onStart(m)}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 transition"
+        >
+          Start Learning <span aria-hidden>→</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               Tiny SVG Charts                               */
+/* -------------------------------------------------------------------------- */
+function LineChart({ data, stroke = "#111827" /* gray-900 */ }) {
+  const width = 320;
+  const height = 100;
+  const pad = 8;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const scaleX = (i) => pad + (i * (width - pad * 2)) / (data.length - 1 || 1);
+  const scaleY = (v) => height - pad - ((v - min) * (height - pad * 2)) / (max - min || 1);
+  const points = data.map((v, i) => `${scaleX(i)},${scaleY(v)}`).join(" ");
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24">
+      <rect x="0" y="0" width={width} height={height} fill="#F3F4F6" rx="8" />
+      <polyline fill="none" stroke={stroke} strokeWidth="2.5" points={points} />
+    </svg>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            Filters & Mock Generators                        */
+/* -------------------------------------------------------------------------- */
+const REGIONS = ["Global", "Africa", "Americas", "Asia", "Europe", "Oceania"];
+const RANGES = [
+  { id: "1y", label: "Past year" },
+  { id: "5y", label: "Past 5 years" },
+  { id: "10y", label: "Past 10 years" },
+];
+
+function seeded(region, range) {
+  const seed = (region + range).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  return Array.from({ length: 12 }, (_, i) =>
+    Math.round(40 + 10 * Math.sin((i + (seed % 7)) / 2) + ((seed % 13) - 6))
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                   Page                                      */
+/* -------------------------------------------------------------------------- */
+export default function Educator() {
+  const [category, setCategory] = useState("all");
+  const [region, setRegion] = useState("Global");
+  const [range, setRange] = useState("5y");
+
+  const filtered = useMemo(() => {
+    if (category === "all") return MODULES;
+    return MODULES.filter((m) => m.category === category);
+  }, [category]);
+
+  const deforestation = useMemo(() => seeded(region, range), [region, range]);
+  const marineWaste = useMemo(() => seeded(region + "w", range), [region, range]);
+  const biodiversity = useMemo(() => seeded(region + "b", range), [region, range]);
+
+  const handleStart = (module) => {
+    alert(`Start: ${module.title}`);
+  };
+
+  // Trusted sources for direct download/open:
+  const PDF_SOURCES = [
+    // IPCC AR6 Synthesis Report – Summary for Policymakers (stable direct PDF)
+    "https://www.ipcc.ch/report/ar6/syr/downloads/report/IPCC_AR6_SYR_SPM.pdf",
+    // IPCC AR5 WG1 SPM (backup)
+    "https://www.ipcc.ch/site/assets/uploads/2018/02/WG1AR5_SPM_FINAL.pdf",
+  ];
+  const CSV_SOURCES = [
+    // Our World in Data – CO2 emissions
+    "https://ourworldindata.org/grapher/co2.csv",
+    // Our World in Data – GHG emissions by sector
+    "https://ourworldindata.org/grapher/ghg-emissions-by-sector.csv",
+  ];
+
+  const downloadPdf = () => {
+    const url = PDF_SOURCES[Math.floor(Math.random() * PDF_SOURCES.length)];
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = ""; // let browser use filename from server
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const downloadCsv = () => {
+    const url = CSV_SOURCES[Math.floor(Math.random() * CSV_SOURCES.length)];
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "";
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-sky-50/50">
+      {/* Top profile bar */}
+      <div className="w-full flex items-center justify-end px-6 pt-4">
+        <div className="flex items-center gap-3 bg-white/80 rounded-full shadow px-4 py-2 border border-[#CAEBFF]">
+          <img
+            src={USER.avatar}
+            alt="Profile avatar"
+            className="w-10 h-10 rounded-full border-2 border-[#0D47A1] bg-[#CAEBFF] object-cover"
+          />
+          <span className="text-[#0D47A1] font-semibold text-base">Hello, {USER.name}</span>
+        </div>
+      </div>
+
+      {/* Hero / Banner */}
+      <section className="mx-auto max-w-6xl px-4 mt-4">
+        <div className="rounded-3xl p-8 sm:p-10 bg-gradient-to-br from-emerald-600 to-green-700 text-white shadow-lg">
+          <div className="flex items-start gap-4">
+            <div className="mt-1">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/15 ring-1 ring-white/20">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="16" rx="3" fill="white" opacity=".15" />
+                  <path d="M12 5v14" stroke="white" strokeWidth="2" opacity=".85" />
+                </svg>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Learn &amp; Act Hub</h1>
+              <p className="mt-2 text-white/90 max-w-3xl">
+                Empower yourself with knowledge. Complete modules, earn badges, and
+                become a more effective climate champion.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Journey Card */}
+      <section className="mx-auto max-w-6xl px-4 mt-6">
+        <div className="rounded-3xl bg-white shadow-sm ring-1 ring-gray-200 p-6 sm:p-8">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-amber-500">🏅</span>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">My Learning Journey</h2>
+              </div>
+              <p className="text-gray-500 text-sm mt-1">Your progress and achievements</p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-6">
+              <Stat value={USER.modulesCompleted} label="Modules Completed" color="text-emerald-600" />
+              <Stat value={USER.totalPoints} label="Total Points" color="text-blue-600" />
+              <Stat value={USER.badgesEarned} label="Badges Earned" color="text-violet-600" />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-semibold text-gray-800">
+                Level {USER.level}: {USER.title}
+              </span>
+              <span className="text-gray-500">{USER.xp}/{USER.nextLevelXp} XP</span>
+            </div>
+            <div className="mt-2">
+              <ProgressBar value={USER.xp} max={USER.nextLevelXp} color="bg-gray-900" />
+            </div>
+            <p className="mt-2 text-sm text-gray-500">
+              {Math.max(0, USER.nextLevelXp - USER.xp)} points to next level!
+            </p>
+          </div>
+
+          {/* Badges */}
+          <div className="mt-6">
+            <h3 className="text-gray-900 font-semibold">My Badges</h3>
+            <div className="mt-3 flex flex-wrap gap-3">
+              {BADGES.map((b) => (
+                <BadgePill key={b.id} earned={b.earned} icon={b.icon} label={b.label} />
+              ))}
+            </div>
+          </div>
+
+          {/* Recently Completed */}
+          <div className="mt-8">
+            <h3 className="text-gray-900 font-semibold">Recently Completed</h3>
+            <ul className="mt-3 space-y-3">
+              {RECENT.map((r) => (
+                <li key={r.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">{r.icon}</span>
+                    <span className="font-medium text-gray-800">{r.title}</span>
+                  </div>
+                  <span className="text-sm text-gray-600">+{r.points} points</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Category Tabs */}
+      <section className="mx-auto max-w-6xl px-4 mt-8">
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {CATEGORIES.map((c) => {
+            const active = category === c.id;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setCategory(c.id)}
+                className={
+                  active
+                    ? "whitespace-nowrap rounded-full bg-gray-900 text-white px-4 py-2 text-sm font-semibold shadow-sm"
+                    : "whitespace-nowrap rounded-full bg-white text-gray-700 px-4 py-2 text-sm font-medium shadow-sm ring-1 ring-gray-200 hover:bg-gray-50"
+                }
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Modules Grid */}
+      <section className="mx-auto max-w-6xl px-4 mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filtered.map((m) => (
+          <ModuleCard key={m.id} m={m} onStart={handleStart} />
+        ))}
+      </section>
+
+      {/* ------------------------------- Analytics ------------------------------ */}
+      <section className="mx-auto max-w-6xl px-4 mt-10">
+        <h2 className="text-2xl font-bold text-gray-900">Environmental Intelligence Dashboard</h2>
+        <div className="mt-3 flex flex-wrap gap-3">
+          <select value={region} onChange={(e) => setRegion(e.target.value)} className="rounded-lg border-gray-300 text-sm">
+            {REGIONS.map((r) => (<option key={r} value={r}>{r}</option>))}
+          </select>
+          <select value={range} onChange={(e) => setRange(e.target.value)} className="rounded-lg border-gray-300 text-sm">
+            {RANGES.map((r) => (<option key={r.id} value={r.id}>{r.label}</option>))}
+          </select>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-gray-900">Deforestation</h3>
+              <span className="text-xs text-gray-500">hectares (index)</span>
+            </div>
+            <LineChart data={deforestation} />
+          </div>
+          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-gray-900">Marine Waste</h3>
+              <span className="text-xs text-gray-500">debris index</span>
+            </div>
+            <LineChart data={marineWaste} stroke="#2563EB" />
+          </div>
+          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-gray-900">Biodiversity Trend</h3>
+              <span className="text-xs text-gray-500">species index</span>
+            </div>
+            <LineChart data={biodiversity} stroke="#059669" />
+          </div>
+        </div>
+      </section>
+
+      {/* --------------------------- Download Reports --------------------------- */}
+      <section className="mx-auto max-w-6xl px-4 mt-10 mb-10">
+        <h2 className="text-2xl font-bold text-gray-900">Download Reports</h2>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 text-center">
+            <div className="text-3xl mb-2">📄</div>
+            <h3 className="font-semibold text-gray-900">Research Paper (PDF)</h3>
+            <p className="text-sm text-gray-500 mb-4">Download a trusted environment research PDF (IPCC).</p>
+            <button
+              onClick={downloadPdf}
+              className="inline-flex items-center justify-center rounded-xl bg-gray-900 text-white font-semibold px-5 py-2.5 hover:bg-black/90"
+            >
+              Download PDF
+            </button>
+          </div>
+          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 text-center">
+            <div className="text-3xl mb-2">📊</div>
+            <h3 className="font-semibold text-gray-900">Data Table (CSV)</h3>
+            <p className="text-sm text-gray-500 mb-4">Download a climate dataset CSV (Our World in Data).</p>
+            <button
+              onClick={downloadCsv}
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 text-white font-semibold px-5 py-2.5 hover:bg-blue-700"
+            >
+              Download CSV
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================== Static Footer ============================== */}
+      <footer
+        role="contentinfo"
+        className="mt-auto bg-[#0B4775] text-white/95 border-t border-white/20"
+      >
+        <div className="max-w-6xl mx-auto px-4">
+          {/* Top row: Home | EcoSphere | Social */}
+          <div className="h-12 flex items-center justify-between text-xs sm:text-sm">
+            <a href="/" className="font-medium hover:text-white">Home</a>
+            <span className="font-semibold tracking-wide">EcoSphere</span>
+            <div className="flex items-center gap-4">
+              <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="Twitter" className="hover:text-white">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                  <path d="M18.244 2H21L13.5 10.59 22 22h-6.8l-5.1-6.64L4.2 22H2l8.06-9.2L2 2h6.8l4.66 6.07L18.244 2Zm-1.2 18h1.87L7.04 4h-1.9l11.9 16Z"/>
+                </svg>
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-white">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                  <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zM8 8h3.8v2.04h.05c.53-1 1.84-2.05 3.79-2.05 4.06 0 4.81 2.67 4.81 6.14V23h-4v-6.62c0-1.58-.03-3.61-2.2-3.61-2.2 0-2.53 1.72-2.53 3.5V23H8V8z"/>
+                </svg>
+              </a>
+              <a href="https://github.com" target="_blank" rel="noreferrer" aria-label="GitHub" className="hover:text-white">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                  <path d="M12 .5A11.5 11.5 0 0 0 8.2 22.9c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.2-1.1-1.6-1.1-1.6-.9-.6.1-.6.1-.6 1 .1 1.6 1.1 1.6 1.1.9 1.6 2.6 1.1 3.2.8.1-.7.4-1.1.6-1.4-2.7-.3-5.6-1.3-5.6-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a10.8 10.8 0 0 1 5.8 0C16.2 3.6 17.2 3.9 17.2 3.9c.6 1.6.2 2.8.1 3.1.7.8 1.2 1.9 1.2 3.2 0 4.7-2.9 5.7-5.6 6 .4.3.7.9.7 1.9v2.7c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <div className="border-t border-white/20" />
+
+          <div className="h-10 flex items-center justify-between text-[11px] sm:text-xs">
+            <span>© {new Date().getFullYear()} EcoSphere. All rights reserved.</span>
+            <div className="flex items-center gap-6">
+              <a href="/terms" className="hover:text-white">Terms</a>
+              <a href="/privacy" className="hover:text-white">Privacy</a>
+              <button
+                type="button"
+                className="hover:text-white"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                title="Back to top"
+              >
+                Back to top ↑
+              </button>
+            </div>
+          </div>
+        </div>
+      </footer>
+      {/* ============================ End Static Footer ============================ */}
+    </div>
+  );
+}

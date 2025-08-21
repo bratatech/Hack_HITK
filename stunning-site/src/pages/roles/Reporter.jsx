@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import api from "../../lib/api/index";
 import { Particles } from "../../components/decor/DecorFX.jsx";
+import { useUser } from "../../context/UserContext.jsx";
 
 import MapView from "../../components/reporter/MapView.jsx";
 import ReportModal from "../../components/reporter/ReportModal.jsx";
@@ -23,7 +24,7 @@ const Profile = ({ name, avatar }) => (
         e.currentTarget.src = "https://i.pravatar.cc/80?img=65";
       }}
     />
-    <span className="text-[#0D47A1] font-semibold text-base truncate max-w-[12rem]">
+    <span className="text-[#0D47A1] font-semibold text-base truncate max-w-[12rem]" style={{ fontFamily: 'Georgia, serif' }}>
       {name}
     </span>
   </div>
@@ -37,7 +38,7 @@ function Chip({ children, tone = "gray" }) {
     blue: "bg-blue-100 text-blue-700",
   };
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tones[tone] || tones.gray}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tones[tone] || tones.gray}`} style={{ fontFamily: 'Georgia, serif' }}>
       {children}
     </span>
   );
@@ -131,7 +132,7 @@ const RecentIncidents = ({ items }) => {
         <svg width="18" height="18" viewBox="0 0 24 24" className="text-navy/80">
           <path fill="currentColor" d="M11 21q-1.85 0-3.487-.712t-2.85-1.926q-1.212-1.215-1.925-2.863T2.025 12q0-1.85.713-3.488T4.664 5.662T7.525 3.737T11 3q1.85 0 3.488.713t2.862 1.95T19.275 8.5t.725 3.5q0 1.85-.712 3.488T16.95 18.338T13.95 20.263T11 21Zm0-2q2.925 0 4.963-2.038T18 12q0-2.925-2.037-4.962T11 5Q8.075 5 6.038 7.038T4 12q0 2.925 2.038 4.963T11 19Zm.5-3q.575 0 .988-.413T12.9 13.7q0-.575-.413-.988T11.5 12.3q-.575 0-.988.412T10.1 13.7q0 .575.413.988T11.5 16Z"/>
         </svg>
-        <h3 className="font-semibold text-lg">Recent Incidents ({list.length})</h3>
+        <h3 className="font-semibold text-lg" style={{ fontFamily: 'Georgia, serif' }}>Recent Incidents ({list.length})</h3>
       </div>
 
       <div className="space-y-4 max-h-[28rem] overflow-auto pr-1">
@@ -147,7 +148,7 @@ const RecentIncidents = ({ items }) => {
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="font-semibold text-gray-900">
+                  <div className="font-semibold text-gray-900" style={{ fontFamily: 'Georgia, serif' }}>
                     {r?.title || "Environmental Incident"}
                   </div>
                   <div className="mt-1 text-sm text-gray-600">
@@ -200,6 +201,44 @@ const RecentIncidents = ({ items }) => {
 };
 
 /* --------------------------------- Page ---------------------------------- */
+
+function ReporterHeader() {
+  return (
+    <div className="bg-blue-100 rounded-xl shadow-md p-6 mb-6">
+      <h1 className="text-3xl font-bold text-blue-900 text-center" style={{ fontFamily: 'Georgia, serif' }}>
+        Citizen Reporter Hub
+      </h1>
+    </div>
+  );
+}
+
+/* ----------------------------- New Header Panel ----------------------------- */
+
+const HeaderPanel = () => {
+  const { user } = useUser();
+
+  return (
+    <div className="glass-panel flex items-center justify-between p-4 rounded-lg shadow-lg bg-white/30 backdrop-blur-md border border-gray-200" style={{ fontFamily: 'Georgia, serif' }}>
+      <div className="flex items-center gap-4">
+        <img
+          src={user?.avatar || "https://i.pravatar.cc/80?img=65"}
+          alt="User avatar"
+          className="w-12 h-12 rounded-full border-2 border-blue-500 object-cover"
+        />
+        <span className="text-blue-900 font-semibold text-lg truncate">
+          {user?.username || "Guest"}
+        </span>
+      </div>
+      <div className="flex gap-6">
+        <button className="text-blue-600 font-medium hover:underline" onClick={() => document.getElementById('my-reports-section').scrollIntoView({ behavior: 'smooth' })}>My Reports</button>
+        <button className="text-blue-600 font-medium hover:underline" onClick={() => document.getElementById('recent-incidents-section').scrollIntoView({ behavior: 'smooth' })}>Recent Incidents</button>
+        <button className="text-blue-600 font-medium hover:underline" onClick={() => document.getElementById('gamification-hub-section').scrollIntoView({ behavior: 'smooth' })}>Gamification Hub</button>
+      </div>
+    </div>
+  );
+};
+
+/* -------------------------------- Reporter Page ------------------------------- */
 
 export default function Reporter() {
   const [open, setOpen] = useState(false);
@@ -296,10 +335,15 @@ export default function Reporter() {
         <motion.div className="flex items-start justify-between gap-3" variants={item}>
           <div className="flex items-center gap-6">
             <img src="/logo.png" alt="EcoSphere Logo" className="w-12 h-12" />
-            <h1 className="text-5xl font-extrabold tracking-tight" style={{ fontFamily: "Monotype Corsiva", color: "#0D47A1" }}>
+            <h1 className="text-5xl font-extrabold tracking-tight" style={{ fontFamily: 'Georgia, serif', color: '#0D47A1' }}>
               Citizen Reporter Hub
             </h1>
           </div>
+        </motion.div>
+
+        {/* New Header Panel */}
+        <motion.div className="mt-6" variants={item}>
+          <HeaderPanel />
         </motion.div>
 
         {/* Filters + map + report button */}
@@ -349,8 +393,8 @@ export default function Reporter() {
 
         {/* Your reports */}
         <motion.div className="mt-6" variants={item}>
-          <div className="rounded-2xl border border-navy/15 bg-white/90 backdrop-blur p-5">
-            <h3 className="font-semibold text-lg">My Reports</h3>
+          <div className="rounded-2xl border border-navy/15 bg-white/90 backdrop-blur p-5" id="my-reports-section">
+            <h3 className="font-semibold text-lg" style={{ fontFamily: 'Georgia, serif' }}>My Reports</h3>
             <p className="text-sm text-navy/70 mt-1">
               Reports submitted by you, along with their progress and impact.
             </p>
@@ -360,7 +404,7 @@ export default function Reporter() {
                 <div key={report.id || report.title} className="rounded-xl border border-gray-100 bg-white shadow-sm p-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="font-semibold text-gray-900">{report.title || "Untitled Report"}</div>
+                      <div className="font-semibold text-gray-900" style={{ fontFamily: 'Georgia, serif' }}>{report.title || "Untitled Report"}</div>
                       <div className="mt-1 text-sm text-gray-600">{report.description || "No description available."}</div>
                       <div className="mt-3 text-sm text-gray-600">
                         Progress: <b>{report.progress || "In progress"}</b>
@@ -398,8 +442,8 @@ export default function Reporter() {
       <footer role="contentinfo" className="bg-[#0B4775] text-white/95 border-t border-white/20">
         <div className="max-w-6xl mx-auto px-4">
           <div className="h-12 flex items-center justify-between text-xs sm:text-sm">
-            <a href="/" className="font-medium hover:text-white">Home</a>
-            <span className="font-semibold tracking-wide">EcoSphere</span>
+            <a href="/" className="font-medium hover:text-white" style={{ fontFamily: 'Georgia, serif' }}>Home</a>
+            <span className="font-semibold tracking-wide" style={{ fontFamily: 'Georgia, serif' }}>EcoSphere</span>
             <div className="flex items-center gap-4">
               <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="Twitter" className="hover:text-white">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
@@ -424,8 +468,8 @@ export default function Reporter() {
           <div className="h-10 flex items-center justify-between text-[11px] sm:text-xs">
             <span>© {new Date().getFullYear()} EcoSphere. All rights reserved.</span>
             <div className="flex items-center gap-6">
-              <a href="/terms" className="hover:text-white">Terms</a>
-              <a href="/privacy" className="hover:text-white">Privacy</a>
+              <a href="/terms" className="hover:text-white" style={{ fontFamily: 'Georgia, serif' }}>Terms</a>
+              <a href="/privacy" className="hover:text-white" style={{ fontFamily: 'Georgia, serif' }}>Privacy</a>
               <button
                 type="button"
                 className="hover:text-white"

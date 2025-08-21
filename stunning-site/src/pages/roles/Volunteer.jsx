@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useUser } from "../../context/UserContext.jsx"; // Ensure this is the correct path
 
 const EVENTS = [
 	{ t: "Beach Cleanup", when: "Sat • 7:00 AM", where: "4.2 km away" },
@@ -9,23 +10,91 @@ const EVENTS = [
 	{ t: "Hotspot Mapping Walk", when: "Tue • 4:00 PM", where: "3.9 km away" },
 ];
 
+const HeaderPanel = () => {
+	return (
+		<div className="glass-panel flex items-center justify-between p-4 rounded-lg shadow-lg bg-white/30 backdrop-blur-md border border-gray-200">
+			<div className="flex items-center gap-4">
+				<img
+					src="/logo.png"
+					alt="EcoSphere Logo"
+					className="w-12 h-12 rounded-full object-cover"
+				/>
+				<span className="text-blue-900 font-semibold text-lg truncate">
+					Volunteer Hub
+				</span>
+			</div>
+			<div className="flex gap-6">
+				<button
+					className="text-blue-600 font-medium hover:underline"
+					onClick={() =>
+						document
+							.getElementById("mission-selection-section")
+							.scrollIntoView({ behavior: "smooth" })
+					}
+				>
+					Mission Selection
+				</button>
+				<button
+					className="text-blue-600 font-medium hover:underline"
+					onClick={() =>
+						document
+							.getElementById("climate-war-room-section")
+							.scrollIntoView({ behavior: "smooth" })
+					}
+				>
+					Climate War Room
+				</button>
+				<button
+					className="text-blue-600 font-medium hover:underline"
+					onClick={() =>
+						document
+							.getElementById("active-tasks-section")
+							.scrollIntoView({ behavior: "smooth" })
+					}
+				>
+					Active Tasks
+				</button>
+				<button
+					className="text-blue-600 font-medium hover:underline"
+					onClick={() =>
+						document
+							.getElementById("impact-tracker-section")
+							.scrollIntoView({ behavior: "smooth" })
+					}
+				>
+					Impact Tracker
+				</button>
+			</div>
+		</div>
+	);
+};
+
 export default function Volunteer() {
+	const { user } = useUser(); // Retrieve the user object
 	const [filter, setFilter] = useState({ type: "", urgency: "", proximity: "" });
 
 	return (
 		<div className="min-h-[100svh] bg-gradient-to-br from-[#E8F5E8] to-[#DFF5E3] text-navy px-4 py-10">
+			{/* Header Section */}
+			<div className="w-full max-w-[72rem] mx-auto">
+				<HeaderPanel />
+			</div>
+
 			{/* Hero Section */}
 			<div className="w-full max-w-[72rem] mx-auto">
 				<div className="pill bg-[#00E5FF] text-black">🤝 Volunteer</div>
 				<div className="flex items-center gap-4 mt-3">
 					<img
-						src="/public/avatar-eco.png"
+						src={user?.avatar || "/public/avatar-eco.png"} // Fallback for avatar
 						alt="Profile Avatar"
 						className="w-12 h-12 rounded-full"
 					/>
-					<h1 className="text-4xl font-bold">John Doe</h1>
+					<h1 className="text-4xl font-bold">{user?.name || "John Doe"}</h1> {/* Fallback for name */}
 				</div>
-				<p className="text-lg mt-1">47 missions completed, 12 species saved</p>
+				<p className="text-lg mt-1">
+					{user?.missionsCompleted || 47} missions completed,{" "}
+					{user?.speciesSaved || 12} species saved
+				</p>
 			</div>
 
 			{/* Live Map Interface */}
@@ -342,3 +411,47 @@ export default function Volunteer() {
 		</div>
 	);
 }
+{/* Static footer (matches Educator) */}
+      <footer role="contentinfo" className="bg-[#0B4775] text-white/95 border-t border-white/20">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="h-12 flex items-center justify-between text-xs sm:text-sm">
+            <a href="/" className="font-medium hover:text-white" style={{ fontFamily: 'Georgia, serif' }}>Home</a>
+            <span className="font-semibold tracking-wide" style={{ fontFamily: 'Georgia, serif' }}>EcoSphere</span>
+            <div className="flex items-center gap-4">
+              <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="Twitter" className="hover:text-white">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                  <path d="M18.244 2H21L13.5 10.59 22 22h-6.8l-5.1-6.64L4.2 22H2l8.06-9.2L2 2h6.8l4.66 6.07L18.244 2Zm-1.2 18h1.87L7.04 4h-1.9l11.9 16Z"/>
+                </svg>
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-white">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                  <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zM8 8h3.8v2.04h.05c.53-1 1.84-2.05 3.79-2.05 4.06 0 4.81 2.67 4.81 6.14V23h-4v-6.62c0-1.58-.03-3.61-2.2-3.61-2.2 0-2.53 1.72-2.53 3.5V23H8V8z"/>
+                </svg>
+              </a>
+              <a href="https://github.com" target="_blank" rel="noreferrer" aria-label="GitHub" className="hover:text-white">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                  <path d="M12 .5A11.5 11.5 0 0 0 8.2 22.9c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.2-1.1-1.6-1.1-1.6-.9-.6.1-.6.1-.6 1 .1 1.6 1.1 1.6 1.1.9 1.6 2.6 1.1 3.2.8.1-.7.4-1.1.6-1.4-2.7-.3-5.6-1.3-5.6-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a10.8 10.8 0 0 1 5.8 0C16.2 3.6 17.2 3.9 17.2 3.9c.6 1.6.2 2.8.1 3.1.7.8 1.2 1.9 1.2 3.2 0 4.7-2.9 5.7-5.6 6 .4.3.7.9.7 1.9v2.7c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <div className="border-t border-white/20" />
+
+          <div className="h-10 flex items-center justify-between text-[11px] sm:text-xs">
+            <span>© {new Date().getFullYear()} EcoSphere. All rights reserved.</span>
+            <div className="flex items-center gap-6">
+              <a href="/terms" className="hover:text-white" style={{ fontFamily: 'Georgia, serif' }}>Terms</a>
+              <a href="/privacy" className="hover:text-white" style={{ fontFamily: 'Georgia, serif' }}>Privacy</a>
+              <button
+                type="button"
+                className="hover:text-white"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                title="Back to top"
+              >
+                Back to top ↑
+              </button>
+            </div>
+          </div>
+        </div>
+      </footer>

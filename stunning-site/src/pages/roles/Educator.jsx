@@ -197,10 +197,31 @@ function seeded(region, range) {
 /* -------------------------------------------------------------------------- */
 /*                                   Page                                      */
 /* -------------------------------------------------------------------------- */
+const LearningPopup = ({ module, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white rounded-lg p-6 max-w-3xl w-full overflow-y-auto max-h-[80vh]">
+        <h2 className="text-2xl font-bold mb-4">{module.title}</h2>
+        <div className="text-sm text-gray-700 mb-4 whitespace-pre-wrap">
+          {module.content}
+        </div>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={onClose}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function Educator() {
   const [category, setCategory] = useState("all");
   const [region, setRegion] = useState("Global");
   const [range, setRange] = useState("5y");
+
+  const [selectedModule, setSelectedModule] = useState(null);
 
   const filtered = useMemo(() => {
     if (category === "all") return MODULES;
@@ -212,7 +233,7 @@ export default function Educator() {
   const biodiversity = useMemo(() => seeded(region + "b", range), [region, range]);
 
   const handleStart = (module) => {
-    alert(`Start: ${module.title}`);
+    setSelectedModule(module);
   };
 
   // Trusted sources for direct download/open:
@@ -254,7 +275,7 @@ export default function Educator() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-sky-50/50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-sky-50">
       {/* Top profile bar */}
       <div className="w-full flex items-center justify-end px-6 pt-4">
         <div className="flex items-center gap-3 bg-white/80 rounded-full shadow px-4 py-2 border border-[#CAEBFF]">
@@ -381,43 +402,6 @@ export default function Educator() {
         ))}
       </section>
 
-      {/* ------------------------------- Analytics ------------------------------ */}
-      <section className="mx-auto max-w-6xl px-4 mt-10">
-        <h2 className="text-2xl font-bold text-gray-900">Environmental Intelligence Dashboard</h2>
-        <div className="mt-3 flex flex-wrap gap-3">
-          <select value={region} onChange={(e) => setRegion(e.target.value)} className="rounded-lg border-gray-300 text-sm">
-            {REGIONS.map((r) => (<option key={r} value={r}>{r}</option>))}
-          </select>
-          <select value={range} onChange={(e) => setRange(e.target.value)} className="rounded-lg border-gray-300 text-sm">
-            {RANGES.map((r) => (<option key={r.id} value={r.id}>{r.label}</option>))}
-          </select>
-        </div>
-
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-gray-900">Deforestation</h3>
-              <span className="text-xs text-gray-500">hectares (index)</span>
-            </div>
-            <LineChart data={deforestation} />
-          </div>
-          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-gray-900">Marine Waste</h3>
-              <span className="text-xs text-gray-500">debris index</span>
-            </div>
-            <LineChart data={marineWaste} stroke="#2563EB" />
-          </div>
-          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-gray-900">Biodiversity Trend</h3>
-              <span className="text-xs text-gray-500">species index</span>
-            </div>
-            <LineChart data={biodiversity} stroke="#059669" />
-          </div>
-        </div>
-      </section>
-
       {/* --------------------------- Download Reports --------------------------- */}
       <section className="mx-auto max-w-6xl px-4 mt-10 mb-10">
         <h2 className="text-2xl font-bold text-gray-900">Download Reports</h2>
@@ -496,6 +480,14 @@ export default function Educator() {
         </div>
       </footer>
       {/* ============================ End Static Footer ============================ */}
+
+      {/* Learning Module Popup */}
+      {selectedModule && (
+        <LearningPopup
+          module={selectedModule}
+          onClose={() => setSelectedModule(null)}
+        />
+      )}
     </div>
   );
 }

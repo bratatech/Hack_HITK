@@ -13,8 +13,12 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/login", // ✅ backend login API
-        { withCredentials: true } // ✅ only needed if using cookies/session
+        "http://localhost:5000/login", //  backend login API
+        {
+          email: f.email,
+          password: f.password,
+        },
+        { withCredentials: true } //  only needed if using cookies/session
       );
 
       console.log("Login success:", res.data);
@@ -22,7 +26,9 @@ export default function Login() {
       // OPTIONAL: If backend returns a JWT token, save it
       // localStorage.setItem("token", res.data.token);
 
-      nav("/dashboard"); // ✅ redirect after successful login
+      const role = res.data.role;
+      nav("/role/reporter"); //  redirect after successful login
+      
     } catch (err) {
       console.error("Login failed:", err);
       setError("Invalid email or password."); // show user-friendly message

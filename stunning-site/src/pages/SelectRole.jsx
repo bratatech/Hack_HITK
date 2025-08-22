@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { setRole, rolePath } from "../lib/roleStore";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext"; 
 
 const ROLES = [
   { key: "reporter", name: "Report a problem", desc: "Submit pollution/incidents.", emoji: "🛟" },
@@ -10,10 +11,22 @@ const ROLES = [
 
 export default function SelectRole() {
   const nav = useNavigate();
+  const { user } = useAuth(); // Comes from AuthProvider
 
-  function pick(key) {
-    setRole(key);
-    nav(rolePath(key));
+  async function pickRole(roleKey) {
+    try {
+      // Save role into backend (for latest user / max(id) logic handled in backend)
+      await axios.post("http://localhost:5000/select-role", { role: roleKey });
+
+      // Save temporarily in localStorage in case login is required
+      localStorage.setItem("pendingRole", roleKey);
+
+      // Always go to login page after picking role
+      nav("/login");
+    } catch (err) {
+      console.error("❌ Failed to save role:", err);
+      alert("Could not save your role. Please try again.");
+    }
   }
 
   return (
@@ -26,8 +39,9 @@ export default function SelectRole() {
           {ROLES.map((r) => (
             <button
               key={r.key}
-              onClick={() => pick(r.key)}
+              onClick={() => pickRole(r.key)}
               className="text-left rounded-2xl border border-navy/15 bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-transform transition-shadow duration-200"
+              aria-label={`Select ${r.name} role`}
             >
               <div className="text-2xl">{r.emoji}</div>
               <div className="font-semibold mt-2">{r.name}</div>

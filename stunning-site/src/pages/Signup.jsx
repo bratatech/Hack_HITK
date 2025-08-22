@@ -9,26 +9,32 @@ export default function Signup() {
   const [error, setError] = useState("");
 
   async function onSubmit(e) {
-    e.preventDefault();
-    setError(""); // reset error
+  e.preventDefault();
+  setError(""); // reset error
 
-    try {
-      // Send signup request to backend
-      const res = await axios.post("http://localhost:5000/signup", {
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/signup",
+      {
         email: f.email,
         password: f.password,
         name: f.name,
-      }, { withCredentials: true });
+      },
+      { withCredentials: true }
+    );
 
-      if (res.status === 201) {
-        // success → move to role selection
-        nav("/select-role");
-      }
-    } catch (err) {
-      console.error("Signup error:", err);
-      setError(err.response?.data || "Something went wrong");
+    if (res.status === 201) {
+      nav("/select-role"); // success → move to role selection
     }
+    if (res.status === 400) {
+      setError(res.data.message); // show error from backend
+    }
+  } catch (err) {
+    console.error("Signup error:", err);
+    setError(err.response?.data?.message || "Something went wrong");
   }
+}
+
 
   function onGoogle() {
     nav("/select-role"); // (later you can add OAuth)

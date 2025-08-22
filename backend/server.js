@@ -1,79 +1,53 @@
+// server.js
 import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
-import pg from "pg";
-import path from "path";
-import { fileURLToPath } from "url";
+import pkg from "pg";
 
-//  Fix dirname/filename
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { Pool } = pkg;
 
-//  PostgreSQL client
-const db = new pg.Client({
+const app = express();
+const PORT = 5000;
+const saltRounds = 10;
+
+// ✅ PostgreSQL connection
+const db = new Pool({
   user: "postgres",
-  host: "127.0.0.1",        // IPv4 loopback
-  database: "postgres",     // change if you made a separate DB
+  host: "localhost",
+  database: "postgres",
   password: "Harinavi@148",
-  port: 7000
+  port: 7000, // default Postgres port
 });
 
 db.connect()
-  .then(() => console.log(" Database connected!"))
-  .catch(err => console.error(" Database connection error:", err));
+  .then(() => console.log("✅ Database connected!"))
+  .catch((err) => {
+    console.error("❌ Database connection error:", err.stack);
+    process.exit(1);
+  });
 
-const app = express();
-const saltRounds = 10;
-const PORT = 5000;
-
-//  Middleware
+// ✅ Middlewares
 app.use(cors({
-  origin: "http://localhost:5173", // React frontend URL
+  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
   credentials: true
 }));
 app.use(express.json());
 
-//  Serve React build
-app.use(express.static(path.join(__dirname, "../stunning-site")));
-
-// Example API route
-app.get("/api/hello", (req, res) => {
-  res.json({ message: "Hello from Express API!" });
-});
-
-//  Catch-all route: serve index.html
-app.get("/", (req, res) => {
-  res.sendFile("/../stunning-site/index.html");
-});
-
-/* ============ SIGNUP ============ */
+// ✅ Routes
 app.post("/signup", async (req, res) => {
+  const { email, name, password } = req.body;
+
   try {
-    let { email, name, password } = req.body;
-
-    // --- Validation ---
-    if (!email || !name || !password) {
-      return res.status(400).json({ message: "All fields are required." });
-    }
-
-    email = email.toLowerCase(); // normalize email
-
-    // Check if email already exists
-    const checkResult = await db.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
-    );
-
+    // check if email exists
+    const checkResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
     if (checkResult.rows.length > 0) {
-      return res
-        .status(400)
-        .json({ message: "Email already exists. Try logging in." });
+      return res.status(400).json({ message: "Email already exists. Try logging in." });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // hash password
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Insert user into DB
+    // insert user
     await db.query(
       "INSERT INTO users (email, password, name) VALUES ($1, $2, $3)",
       [email, hashedPassword, name]
@@ -81,18 +55,20 @@ app.post("/signup", async (req, res) => {
 
     res.status(201).json({ message: "Signup successful!" });
   } catch (err) {
-    console.error("Error during registration:", err);
+    console.error("❌ Error during registration:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-
 /* ============ LOGIN ============ */
+
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
+  console.log(" Login attempt:", email, password);
 
   try {
     const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    console.log(" DB result:", result.rows);
 
     if (result.rows.length === 0) {
       return res.status(400).json({ message: "Invalid email or password" });
@@ -100,52 +76,65 @@ app.post("/login", async (req, res) => {
 
     const user = result.rows[0];
     const match = await bcrypt.compare(password, user.password);
+    console.log("👉 bcrypt match:", match);
 
     if (!match) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    res.status(201).json({ message: "Login successful!" });
+    res.status(200).json({ message: "Login successful!", 
+      role: user.role
+     });
   } catch (err) {
-    console.error(" Error during login:", err);
+    console.error("❌ Error during login:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-app.post("/select-role",(req,res)=>{
-  const { role } = req.body;
-  // Here you would typically save the role to the user's session or database
-  db.query("UPDATE users SET role = $1 where MAX(id)", [role]) 
-  console.log(`User selected role: ${role}`);
-app.post("/select-role", async (req, res) => {
-  const { role } = req.body;
-  
-  try {
-    // Update the user with the highest ID (most recent)
-    const result = await db.query(
-      `UPDATE users 
-       SET role = $1 
-       WHERE id = (SELECT MAX(id) FROM users) 
-       RETURNING id, email, role`,
-      [role]
-    );
 
-    if (result.rowCount === 0) {
-      return res.status(404).json({ message: "No users found to update" });
+
+/* ============ ROLE SELECTION ============ */
+app.post("/select-role", async (req, res) => {
+  try {
+    const { role } = req.body;
+
+    // Get latest user id
+    const result = await db.query("SELECT MAX(id) AS id FROM users");
+    const latestId = result.rows[0].id;
+
+    if (!latestId) {
+      return res.status(400).json({ error: "No user found to assign role" });
     }
 
-    console.log(`Updated role to ${role} for user ID: ${result.rows[0].id}`);
-    res.status(200).json({ 
-      message: `Role updated successfully!`,
-      user: result.rows[0]
-    });
+    // ✅ Correct table name: users
+    await db.query("UPDATE users SET role = $1 WHERE id = $2", [role, latestId]);
+
+    res.json({ success: true, role });
   } catch (err) {
-    console.error("Error updating role:", err);
-    res.status(500).json({ message: "Failed to update role" });
+    console.error("DB error in /select-role:", err);
+    res.status(500).json({ error: "Failed to save role" });
   }
-});  res.status(200).json({ message: `Role ${role} selected successfully!` });
-})
+});
+
+app.post("/role/reporter", async (req, res) => {
+  try {
+    const { description, image, severity, lat, lon } = req.body;
+
+    const result = await pool.query(
+      `INSERT INTO reports (reporter_id, description, image, severity, lat, lon)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [ description, image, severity, lat, lon]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("Error inserting report:", err);
+    res.status(500).json({ error: "Failed to save report" });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
-  console.log(` Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

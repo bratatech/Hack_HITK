@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap');
+
 /* src/index.css */
 @import "tailwindcss";
 
@@ -238,3 +240,41 @@ body {
 /* Stronger hover lift (keep your original if you prefer it) */
 .hover-raise-2 { transition: transform .25s, box-shadow .25s; }
 .hover-raise-2:hover { transform: translateY(-2px); box-shadow: 0 16px 48px rgba(0,0,0,.15), 0 4px 12px rgba(0,0,0,.10); }
+/* === EcoSphere wordmark === */
+.ecos-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.1rem;
+  font-weight: 800;
+  font-size: 1.75rem;             /* ~text-2xl */
+  letter-spacing: 0.06em;         /* tracking-widest-ish */
+  color: #0b0b0b;                 /* deep text for contrast on glass */
+  line-height: 1;
+}
+
+/* "Eco" — solid */
+.ecos-wordmark .ecos-eco {
+  text-shadow:
+    0px 0px 0 #000,
+    2px 2px 0 rgba(0,0,0,0.25),
+    4px 4px 0 rgba(0,0,0,0.18),
+    6px 6px 0 rgba(0,0,0,0.12);
+}
+
+/* "Sphere" — italic + slight tilt + heavier multi-shadow */
+.ecos-wordmark .ecos-sphere {
+  font-style: italic;
+  transform: rotate(-2deg);
+  display: inline-block;
+  text-shadow:
+    0px 0px 0 #000,
+    2px 2px 0 rgba(0,0,0,0.30),
+    4px 4px 0 rgba(0,0,0,0.22),
+    6px 6px 0 rgba(0,0,0,0.16),
+    8px 8px 0 rgba(0,0,0,0.10);
+}
+
+/* Applied Roboto Slab globally */
+h1 {
+  font-family: 'Roboto Slab', serif;
+}

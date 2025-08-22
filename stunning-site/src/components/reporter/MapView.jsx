@@ -1,7 +1,6 @@
 // src/components/reporter/MapView.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, CircleMarker, useMap, useMapEvents } from "react-leaflet";
-import { motion } from "framer-motion";
 
 const severityColor = (s = 50) => (s >= 80 ? "#ef4444" : s >= 60 ? "#f59e0b" : "#22c55e");
 
@@ -14,20 +13,6 @@ function Locator({ setCenter }) {
     );
   }, [setCenter]);
   useMapEvents({});
-  return null;
-}
-
-function IntroFly({ center }) {
-  const map = useMap();
-  useEffect(() => {
-    try {
-      map.setZoom(3);
-      const t = setTimeout(() => {
-        map.flyTo(center, 12, { duration: 2 });
-      }, 350);
-      return () => clearTimeout(t);
-    } catch {}
-  }, [map, center]);
   return null;
 }
 
@@ -83,9 +68,8 @@ export default function MapView({ reports = [], filters, onOpenReport, height = 
 
   return (
     <div className="map-sky border border-navy/15 relative" style={{ overflow: "visible" }}>
-      <MapContainer center={[center.lat, center.lng]} zoom={3} style={{ height, width: "100%" }}>
+      <MapContainer center={[20.2961, 85.8245]} zoom={10} style={{ height, width: "100%" }}>
         <Locator setCenter={setCenter} />
-        <IntroFly center={center} />
         <ResizeFix />
         <FocusIncidentBridge />
         <TileLayer
@@ -100,24 +84,12 @@ export default function MapView({ reports = [], filters, onOpenReport, height = 
             pathOptions={{ color: severityColor(r.severity), fillOpacity: 0.6 }}
           />
         ))}
+        <CircleMarker
+          center={[20.2961, 85.8245]} // Coordinates for Bhubaneswar
+          radius={20}
+          pathOptions={{ color: "red", fillColor: "red", fillOpacity: 0.5 }}
+        />
       </MapContainer>
-
-      <motion.button
-        onClick={onOpenReport}
-        className="btn-fab absolute z-[1000] bottom-5 right-5 md:bottom-4 md:right-4 rounded-full px-5 py-3 font-semibold shadow-xl text-white pointer-events-auto"
-        style={{ background: "#10b981" }}
-        animate={{
-          scale: [1, 1.05, 1],
-          boxShadow: [
-            "0 12px 28px rgba(16,185,129,.25)",
-            "0 12px 28px rgba(16,185,129,.45)",
-            "0 12px 28px rgba(16,185,129,.25)",
-          ],
-        }}
-        transition={{ repeat: Infinity, duration: 2.4 }}
-      >
-        + Report Incident
-      </motion.button>
     </div>
   );
 }
